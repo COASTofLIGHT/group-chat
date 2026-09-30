@@ -30,86 +30,97 @@
   *, *::before, *::after { box-sizing: border-box; }
   html { height: 100%; scroll-padding-top: env(safe-area-inset-top, 0px); }
   body {
-    margin: 0; min-height: 100%;
+    margin: 0; height: 100%;
     background: var(--mist); color: var(--ink);
     font-family: var(--font);
     -webkit-text-size-adjust: 100%;
     display: flex; flex-direction: column; align-items: center;
   }
-  h1 { font-size: clamp(1.9rem, 4vw, 2.6rem); font-weight: 800; margin: 0; letter-spacing: -0.02em; line-height: 1.05; }
+  h1 { font-size: clamp(1.6rem, 3.2vw, 2.2rem); font-weight: 800; margin: 0; letter-spacing: -0.02em; line-height: 1.05; }
   button { font-family: var(--font); }
   button:focus-visible { outline: 4px solid var(--focus); outline-offset: 3px; }
-  footer { color: var(--ink-soft); font-size: 0.9rem; }
+  footer { color: var(--ink-soft); font-size: 0.85rem; text-align: center; }
+
+  /* The page fills exactly one screen; the two boxes take whatever height is left. */
   main {
-    width: 100%; max-width: 860px; padding: 14px 20px 20px;
-    display: flex; flex-direction: column; gap: 14px;
+    width: 100%; max-width: 860px; height: 100%;
+    padding: 10px 20px 10px;
+    display: flex; flex-direction: column; gap: 10px;
   }
+  .top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
   .back {
-    align-self: flex-start;
     color: var(--ink-soft);
     font-size: 0.95rem;
     text-decoration: none;
   }
   .back:hover { text-decoration: underline; }
   .back:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-  .steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .steps li {
     background: var(--leaf); border: 0; border-radius: 0.9rem; font-weight: 600;
-    padding: 8px 14px; font-size: 1.05rem; line-height: 1.35;
+    padding: 6px 12px; font-size: 1rem; line-height: 1.3;
   }
-  .steps b { display: block; font-size: 1.15rem; }
+  .steps b { display: block; font-size: 1.05rem; }
 
   .lang {
     background: var(--panel); border: 1px solid var(--line); border-radius: 0.9rem;
-    padding: 8px 14px 10px;
+    padding: 6px 12px 8px;
   }
-  .lang h2 { font-size: 1.05rem; font-weight: 800; margin: 0 0 4px; }
-  .lang dl { margin: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px 16px; }
-  .lang div { font-size: 0.98rem; line-height: 1.3; }
+  .lang h2 { font-size: 1rem; font-weight: 800; margin: 0 0 2px; }
+  .lang dl { margin: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px 14px; }
+  .lang div { font-size: 0.95rem; line-height: 1.3; }
   .lang dt { font-weight: 700; display: inline; }
   .lang dd { margin: 0; display: inline; font-style: italic; }
 
-  .board { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .card { display: flex; flex-direction: column; gap: 8px; }
+  .board {
+    flex: 1; min-height: 0;
+    display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: minmax(0, 1fr); gap: 12px;
+  }
+  .card { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
   .box {
-    height: clamp(170px, 34vh, 360px);
+    flex: 1; min-height: 110px;
     border-radius: 1.1rem;
     display: grid; place-items: center; text-align: center;
-    padding: 16px; user-select: none; color: var(--ink);
+    padding: 12px; user-select: none; color: var(--ink);
   }
   .words { background: var(--panel); border: 3px solid var(--line); }
   .box[role="button"] { cursor: pointer; }
   .box[role="button"]:hover { filter: brightness(0.97); }
   .box:focus-visible { outline: 4px solid var(--focus); outline-offset: 3px; }
   .words ul { list-style: none; margin: 0; padding: 0; }
-  .words li { font-weight: 800; font-size: min(6vh, 6vw, 3.2rem); line-height: 1.2; letter-spacing: -0.01em; }
+  .words li { font-weight: 800; font-size: min(5.2vh, 5.5vw, 3rem); line-height: 1.2; letter-spacing: -0.01em; }
   .emotion { background: var(--sky); transition: background-color 150ms linear; }
-  .emotion span { font-weight: 800; font-size: min(8vh, 7vw, 4.2rem); line-height: 1.05; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+  .emotion span { font-weight: 800; font-size: min(7.5vh, 7vw, 4rem); line-height: 1.05; letter-spacing: -0.02em; overflow-wrap: anywhere; }
   .emotion span.pop { animation: pop 180ms ease-out; }
   @keyframes pop { from { transform: scale(0.85); opacity: 0.4; } to { transform: scale(1); opacity: 1; } }
 
   button.big {
     font-size: 1.3rem; font-weight: 800;
-    padding: 12px; border-radius: 0.9rem; border: 0; cursor: pointer;
-    min-height: 58px; color: var(--ink);
+    padding: 8px; border-radius: 0.9rem; border: 0; cursor: pointer;
+    min-height: 50px; color: var(--ink);
   }
-  #pairBtn { background: var(--teal); font-size: 1.5rem; }
+  #pairBtn { background: var(--teal); font-size: 1.4rem; }
   button.small {
-    font-size: 1rem; font-weight: 700; padding: 8px 12px; border-radius: 0.9rem;
+    font-size: 1rem; font-weight: 700; padding: 6px 12px; border-radius: 0.9rem;
     border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer;
   }
   button.small:hover:not(:disabled) { filter: brightness(0.96); }
   button.big:hover:not(:disabled) { filter: brightness(0.96); }
   button.small:disabled { opacity: 0.4; cursor: default; }
 
+  /* Phones: let the page scroll normally instead of squeezing into one screen. */
   @media (max-width: 620px) {
+    body { height: auto; min-height: 100%; }
+    main { height: auto; }
     .steps { grid-template-columns: 1fr; gap: 6px; }
     .steps b { display: inline; margin-right: 6px; }
-    .board { grid-template-columns: 1fr; }
+    .board { flex: none; grid-template-columns: 1fr; grid-template-rows: none; }
     .lang dl { grid-template-columns: 1fr 1fr; }
-    .box { height: 30vh; min-height: 160px; }
+    .box { flex: none; height: 30vh; min-height: 160px; }
     .words li { font-size: min(5.5vh, 9vw); }
     .emotion span { font-size: min(8vh, 10vw); }
+    footer { display: none; }
   }
   @media (prefers-reduced-motion: reduce) {
     .emotion span.pop { animation: none; }
@@ -119,8 +130,10 @@
 </head>
 <body>
 <main>
-  <a class="back" href="https://coastoflight.github.io/groupchat/">&larr; Group Chat</a>
-  <h1>Mixed Feelings</h1>
+  <div class="top">
+    <h1>Mixed Feelings</h1>
+    <a class="back" href="https://coastoflight.github.io/groupchat/">&larr; Group Chat</a>
+  </div>
 
   <ol class="steps">
     <li><b>A</b>Match the emotion to one of the three words.</li>
