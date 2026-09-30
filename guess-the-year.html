@@ -33,24 +33,28 @@
   .back:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 
   main { flex: 1; min-height: 0; display: grid; grid-template-columns: 1.25fr 1fr; gap: clamp(0.6rem, 1.6vw, 1.1rem); }
-  section { border-radius: 0.9rem; padding: clamp(1rem, 2.2vw, 1.75rem); min-height: 0; overflow-y: auto; }
+  section { border-radius: 0.9rem; padding: clamp(0.9rem, 2vw, 1.5rem); min-height: 0; overflow-y: auto; }
 
-  /* Left: the round */
+  /* Left: the round. The five cards share whatever height is left. */
   .talk { background: var(--talk); display: flex; flex-direction: column; }
   .talk h2 {
-    margin: 0; font-size: clamp(1.15rem, min(2.2vw, 3.8vh), 1.85rem);
+    margin: 0; font-size: clamp(1.1rem, min(2vw, 3.4vh), 1.7rem);
     font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; text-wrap: balance;
   }
-  .talk .sub { margin: 0.35em 0 clamp(0.75rem, 2vh, 1.25rem); font-size: clamp(1rem, 1.6vw, 1.3rem); }
+  .talk .sub { margin: 0.3em 0 clamp(0.5rem, 1.5vh, 0.9rem); font-size: clamp(0.95rem, min(1.5vw, 2.6vh), 1.2rem); }
 
-  .things { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
-  .things li { display: flex; }
+  .things {
+    list-style: none; margin: 0; padding: 0;
+    display: flex; flex-direction: column; gap: clamp(0.3rem, 1vh, 0.5rem);
+    flex: 1; min-height: 0;
+  }
+  .things li { display: flex; flex: 1 1 0; min-height: 2.4rem; max-height: 5rem; }
   .card {
     flex: 1; display: flex; align-items: center; justify-content: space-between; gap: 1rem;
     font: inherit; color: var(--ink); text-align: left;
     background: var(--mist); border: 0; border-radius: 0.6rem;
-    padding: 0.45em 0.8em; cursor: pointer;
-    font-size: clamp(1.05rem, min(2vw, 3.4vh), 1.7rem); font-weight: 600; line-height: 1.15;
+    padding: 0.25em 0.8em; cursor: pointer;
+    font-size: clamp(1rem, min(1.9vw, 3vh), 1.6rem); font-weight: 600; line-height: 1.15;
   }
   .card:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .year {
@@ -60,20 +64,19 @@
   .card.shown .year { border: 2px solid var(--ink); background: var(--ink); color: var(--mist); animation: pop 0.3s ease-out; }
   @keyframes pop { from { transform: scale(0.85); opacity: 0; } }
 
-  .controls { margin-top: clamp(0.75rem, 2vh, 1.25rem); display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+  .controls { margin-top: clamp(0.6rem, 1.6vh, 1rem); display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
   button.btn {
-    font: inherit; font-weight: 600; font-size: 1rem; padding: 0.55em 1.1em; border-radius: 0.6rem;
+    font: inherit; font-weight: 600; font-size: 1rem; padding: 0.5em 1.05em; border-radius: 0.6rem;
     border: 2px solid var(--ink); background: var(--ink); color: var(--mist); cursor: pointer;
   }
   button.btn.ghost { background: transparent; color: var(--ink); }
   button.btn:hover { filter: brightness(1.15); }
   button.btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   select {
-    font: inherit; font-size: 1rem; padding: 0.5em 0.6em; border-radius: 0.6rem;
+    font: inherit; font-size: 1rem; padding: 0.45em 0.6em; border-radius: 0.6rem;
     border: 2px solid var(--ink); background: var(--mist); color: var(--ink);
   }
-  .note { font-size: 0.85rem; color: var(--ink-soft); margin: 0.6rem 0 0; }
-  .round { margin: 0 0 0.5rem; font-size: 0.95rem; font-weight: 600; color: var(--ink-soft); }
+  .note { font-size: 0.85rem; color: var(--ink-soft); margin: 0.4rem 0 0; }
 
   /* Right: useful language */
   .lang { background: var(--lang); }
@@ -86,6 +89,8 @@
   @media (max-width: 800px) {
     html, body, .page { height: auto; }
     main { grid-template-columns: 1fr; }
+    .things li { flex: none; min-height: 0; max-height: none; }
+    .card { padding: 0.45em 0.8em; }
   }
   @media (prefers-reduced-motion: reduce) { .card.shown .year { animation: none; } }
 </style>
@@ -103,7 +108,6 @@
       <h2><span id="ask"></span> <span id="best"></span></h2>
       <p class="sub">Talk with a friend. Use the language. Guess the year.</p>
 
-      <p class="round" id="round"></p>
       <ul class="things" id="things"></ul>
 
       <div class="controls">
@@ -176,7 +180,6 @@
   const askEl = document.getElementById("ask");
   const bestEl = document.getElementById("best");
   const thingsEl = document.getElementById("things");
-  const roundEl = document.getElementById("round");
   const pick = document.getElementById("topicPick");
 
   // One flat list of all 16 rounds, in a fixed order
@@ -207,7 +210,6 @@
     const r = rounds[pos], t = topics[r.ti];
     askEl.textContent = t.ask;
     bestEl.textContent = t.best;
-    roundEl.textContent = `${t.label}, round ${r.ri + 1} of 2`;
     pick.value = r.ti;
     current = r.items.map(x => ({ ...x, open: false }));
     render(current);
