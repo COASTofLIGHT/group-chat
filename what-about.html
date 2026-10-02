@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>What About?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --mist: #EDF3F2;
+    --ink: #10303A;
+    --ink-soft: #456670;
+    --focus: #0B62A4;
+    --talk: #A9CCEB;   /* B1: sky blue */
+    --lang: #F2D9A6;
+    --late: #F4B5A0;   /* last ten seconds */
+    --font: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--mist);
+    color: var(--ink);
+    font-family: var(--font);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .page {
+    height: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: clamp(0.75rem, 2vw, 1.5rem) clamp(1rem, 3vw, 2.25rem);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(0.5rem, 1.5vh, 1rem);
+  }
+
+  .top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .top h1 {
+    margin: 0;
+    font-size: clamp(1.5rem, 2.8vw, 2.2rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+  }
+
+  .back {
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .back:hover { text-decoration: underline; }
+  .back:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+  main {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: clamp(0.6rem, 1.6vw, 1.1rem);
+  }
+
+  section {
+    border-radius: 0.9rem;
+    padding: clamp(1rem, 2.2vw, 1.75rem);
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  /* Left: the situation, the five options and the timer */
+  .talk {
+    background: var(--talk);
+    display: flex;
+    flex-direction: column;
+  }
+  .talk h2 {
+    margin: 0;
+    font-size: clamp(1.2rem, min(2.2vw, 3.8vh), 1.9rem);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    text-wrap: balance;
+  }
+  .talk .sub {
+    margin: 0.5em 0 clamp(0.6rem, 2vh, 1.5rem);
+    font-size: clamp(1.05rem, 1.6vw, 1.35rem);
+    line-height: 1.3;
+  }
+  .things {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    align-content: flex-start;
+    flex: 1;
+  }
+  .things li {
+    background: var(--mist);
+    border-radius: 0.6rem;
+    padding: 0.55em 0.7em;
+    font-size: clamp(1.05rem, min(2vw, 3.2vh), 1.7rem);
+    font-weight: 600;
+    line-height: 1.15;
+  }
+  .things.fresh li { animation: drop 0.3s ease-out both; }
+  .things.fresh li:nth-child(2) { animation-delay: 0.04s; }
+  .things.fresh li:nth-child(3) { animation-delay: 0.08s; }
+  .things.fresh li:nth-child(4) { animation-delay: 0.12s; }
+  .things.fresh li:nth-child(5) { animation-delay: 0.16s; }
+  @keyframes drop { from { opacity: 0; transform: translateY(-5px); } }
+
+  /* Timer */
+  .timer {
+    margin-top: clamp(0.75rem, 2vh, 1.25rem);
+    display: flex;
+    align-items: center;
+    gap: clamp(0.75rem, 1.5vw, 1.25rem);
+  }
+  .time {
+    font-size: clamp(2rem, min(4.6vw, 7vh), 4rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    min-width: 3.3ch;
+  }
+  .track {
+    flex: 1;
+    height: 0.8rem;
+    border-radius: 999px;
+    background: rgba(16, 48, 58, 0.15);
+    overflow: hidden;
+  }
+  .fill {
+    height: 100%;
+    width: 100%;
+    border-radius: 999px;
+    background: var(--ink);
+    transition: width 0.25s linear, background-color 0.3s ease;
+  }
+  .timer.late .fill { background: var(--late); }
+  /* When time is up, the message takes the place of the bar. */
+  .after {
+    display: none;
+    flex: 1;
+    margin: 0;
+    font-size: clamp(1.05rem, 1.6vw, 1.35rem);
+    font-weight: 700;
+    line-height: 1.25;
+  }
+  .timer.done .track { display: none; }
+  .timer.done .after { display: block; }
+
+  .controls {
+    margin-top: clamp(0.5rem, 1.5vh, 1rem);
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  button {
+    font: inherit;
+    font-weight: 600;
+    font-size: clamp(0.85rem, 1.25vw, 1rem);
+    padding: 0.55em 1.1em;
+    border-radius: 0.6rem;
+    border: 2px solid var(--ink);
+    background: var(--ink);
+    color: var(--mist);
+    cursor: pointer;
+  }
+  button.ghost { background: transparent; color: var(--ink); }
+  button:hover { filter: brightness(1.15); }
+  button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+  .mins { display: inline-flex; border: 2px solid var(--ink); border-radius: 0.6rem; overflow: hidden; }
+  .mins button { border: 0; border-radius: 0; background: transparent; color: var(--ink); font-weight: 700; padding: 0.45em 0.85em; }
+  .mins button.on { background: var(--ink); color: var(--mist); }
+  .mins button:focus-visible { outline-offset: -3px; }
+  .unit { font-weight: 700; margin-left: -0.4rem; }
+  .push { margin-left: auto; }
+
+  /* Right: useful language */
+  .lang {
+    background: var(--lang);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(0.9rem, 2.5vh, 1.5rem) clamp(1rem, 2vw, 1.5rem);
+    align-content: start;
+  }
+  .lang h3 {
+    margin: 0 0 0.4em;
+    font-size: clamp(1rem, 1.4vw, 1.2rem);
+    font-weight: 800;
+    padding-bottom: 0.25em;
+    border-bottom: 2px solid rgba(16, 48, 58, 0.25);
+  }
+  .lang ul { list-style: none; margin: 0; padding: 0; }
+  .lang li {
+    font-size: clamp(0.95rem, 1.5vw, 1.25rem);
+    line-height: 1.3;
+    margin-bottom: 0.3em;
+  }
+  .lang b { font-weight: 800; }
+  .lang .gap { color: var(--ink-soft); }
+
+  @media (max-width: 800px) {
+    html, body { height: auto; }
+    .page { height: auto; }
+    main { grid-template-columns: 1fr; }
+    .lang { grid-template-columns: 1fr; }
+    button { font-size: 1rem; }
+    .push { margin-left: 0; }
+    .timer { flex-wrap: wrap; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .things.fresh li { animation: none; }
+    .fill { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="top">
+    <h1>What About?</h1>
+    <a class="back" href="https://coastoflight.github.io/group-chat/">&larr; Group Chat</a>
+  </div>
+
+  <main>
+    <section class="talk">
+      <h2 id="situation"></h2>
+      <p class="sub" id="task"></p>
+
+      <ul class="things" id="things"></ul>
+
+      <div class="timer" id="timer">
+        <div class="time" id="time" role="timer" aria-live="off">2:00</div>
+        <div class="track" aria-hidden="true"><div class="fill" id="fill"></div></div>
+        <p class="after" id="after" aria-live="polite"></p>
+        <div class="mins" role="group" aria-label="Minutes">
+          <button data-min="1" aria-label="1 minute">1</button>
+          <button data-min="2" aria-label="2 minutes" class="on">2</button>
+          <button data-min="3" aria-label="3 minutes">3</button>
+        </div>
+        <span class="unit">min</span>
+      </div>
+
+      <div class="controls">
+        <button id="start">Start</button>
+        <button id="reset" class="ghost">Reset</button>
+        <button id="sound" class="ghost" aria-pressed="true">Sound on</button>
+        <button id="next" class="push">New situation</button>
+      </div>
+    </section>
+
+    <section class="lang" aria-label="Useful language">
+      <div>
+        <h3>Suggest an idea</h3>
+        <ul>
+          <li><b>Shall we start with</b> <span class="gap">…</span>?</li>
+          <li><b>How about</b> <span class="gap">…</span>?</li>
+          <li><b>I think</b> <span class="gap">…</span> <b>would be good because</b> <span class="gap">…</span></li>
+          <li><span class="gap">…</span> <b>is better than</b> <span class="gap">…</span> <b>because</b> <span class="gap">…</span></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Ask your partner</h3>
+        <ul>
+          <li><b>What do you think?</b></li>
+          <li><b>What about</b> <span class="gap">…</span>?</li>
+          <li><b>Do you agree?</b></li>
+          <li><b>Why</b> do you think that?</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Agree or disagree</h3>
+        <ul>
+          <li><b>That's a good idea.</b></li>
+          <li><b>I agree, because</b> <span class="gap">…</span></li>
+          <li><b>I'm not sure</b> about that.</li>
+          <li><b>Yes, but</b> <span class="gap">…</span></li>
+          <li><b>I see what you mean, but</b> <span class="gap">…</span></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Decide together</h3>
+        <ul>
+          <li><b>So, which one</b> is best?</li>
+          <li><b>Let's choose</b> <span class="gap">…</span></li>
+          <li><b>I think we should choose</b> <span class="gap">…</span> <b>because</b> <span class="gap">…</span></li>
+          <li><b>OK, so we both think</b> <span class="gap">…</span> is best.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+</div>
+
+<script>
+  /*
+    Situations. Each one has:
+      s: the situation
+      t: what to talk about and decide
+      o: five options
+    To add one, copy a block and change it.
+  */
+  const situations = [
+    { s: "A girl is moving to another city, and her classmates want to give her a goodbye present.",
+      t: "Talk together about the different presents they could give her, and decide which would be best.",
+      o: ["a photo album", "a T-shirt signed by everyone", "a book", "a box of chocolates", "a phone case"] },
+    { s: "A boy studies very hard and only has one free afternoon a week. He wants an activity to help him relax.",
+      t: "Talk together about the different activities he could do, and decide which would be most relaxing.",
+      o: ["going for a bike ride", "playing video games", "drawing", "watching a film", "swimming"] },
+    { s: "Some friends are spending Saturday together, but it's raining all day.",
+      t: "Talk together about the different things they could do, and decide which would be most fun.",
+      o: ["playing board games", "baking a cake", "watching a series", "going to the shopping centre", "going bowling"] },
+    { s: "A class is going on a one-day school trip at the end of term.",
+      t: "Talk together about the different places they could go, and decide which would be best.",
+      o: ["a theme park", "a science museum", "the beach", "a zoo", "a castle"] },
+    { s: "Two friends are going camping in the mountains for a weekend. They can't carry very much.",
+      t: "Talk together about the different things they could take, and decide which is most important.",
+      o: ["a torch", "a map", "a phone charger", "a warm jacket", "a football"] },
+    { s: "A class is planning a party for the last day of school.",
+      t: "Talk together about the different things they could have at the party, and decide which is most important.",
+      o: ["music", "pizza", "games", "decorations", "a photo wall"] },
+    { s: "A girl has just moved to a new town and wants to make friends. She's thinking of starting a new hobby.",
+      t: "Talk together about the different hobbies she could try, and decide which would be best for meeting people.",
+      o: ["joining a football team", "a dance class", "a drama club", "guitar lessons", "a photography course"] },
+    { s: "A class wants to raise money for a local animal shelter.",
+      t: "Talk together about the different ways they could raise money, and decide which would be best.",
+      o: ["selling cakes", "washing cars", "a sponsored walk", "a talent show", "selling old books and toys"] },
+    { s: "A student from another country is visiting a town for one day. Her host family want to show her around.",
+      t: "Talk together about the different places they could take her, and decide which would be most interesting.",
+      o: ["the old town", "the beach", "a football match", "the market", "a shopping centre"] },
+    { s: "A boy is going to be fourteen next week and wants to celebrate with his friends.",
+      t: "Talk together about the different ways he could celebrate, and decide which would be most fun.",
+      o: ["a party at home", "going bowling", "a day at a water park", "a pizza restaurant", "the cinema"] },
+    { s: "A girl wants to get fitter, but she doesn't have much free time.",
+      t: "Talk together about the different things she could do, and decide which would be easiest for her.",
+      o: ["running before school", "cycling to school", "joining a gym", "a dance class", "walking the dog"] },
+    { s: "A family living in a small flat wants to get a pet.",
+      t: "Talk together about the different pets they could get, and decide which would be best for them.",
+      o: ["a dog", "a cat", "a hamster", "some fish", "a bird"] },
+    { s: "A boy wants to improve his English outside school.",
+      t: "Talk together about the different things he could do, and decide which would help him most.",
+      o: ["watching series in English", "reading comics", "using a language app", "chatting online in English", "listening to songs"] },
+    { s: "A sixteen-year-old wants to earn some money in the summer holidays.",
+      t: "Talk together about the different jobs she could do, and decide which would be best.",
+      o: ["working in a café", "looking after children", "walking dogs", "working in a shop", "helping at a sports camp"] },
+    { s: "A grandfather is going to be seventy, and his family want to buy him a present.",
+      t: "Talk together about the different presents they could buy, and decide which he would like most.",
+      o: ["a tablet", "a watch", "a book", "theatre tickets", "a jumper"] },
+    { s: "A school has some money to spend on something new for its students.",
+      t: "Talk together about the different things the school could buy, and decide which would be most useful.",
+      o: ["books for the library", "sports equipment", "a school garden", "new computers", "a music room"] },
+    { s: "Some friends want to spend the day at a beach twenty kilometres away.",
+      t: "Talk together about the different ways they could get there, and decide which would be best.",
+      o: ["by bus", "by bike", "by train", "by car with a parent", "on foot"] },
+    { s: "Two cousins have a free afternoon in the city centre and twenty euros each.",
+      t: "Talk together about the different things they could do, and decide which would be best.",
+      o: ["shopping for clothes", "going to the cinema", "eating burgers", "an escape room", "visiting a museum"] },
+    { s: "A favourite teacher is leaving the school, and the class want to do something special.",
+      t: "Talk together about the different things they could do, and decide which would be the nicest surprise.",
+      o: ["a surprise party", "a card signed by everyone", "a video message", "a present", "a song from the class"] },
+    { s: "A boy feels tired all the time and wants to change his habits.",
+      t: "Talk together about the different things he could change, and decide which would help him most.",
+      o: ["going to bed earlier", "eating breakfast", "doing more sport", "using his phone less", "drinking more water"] },
+    { s: "A girl has invited four friends for dinner, but she isn't a very good cook.",
+      t: "Talk together about the different things she could make, and decide which would be best.",
+      o: ["pasta", "pizza", "a big salad", "burgers", "tacos"] },
+    { s: "A school wants to start a new after-school club.",
+      t: "Talk together about the different clubs it could start, and decide which would be most popular.",
+      o: ["a chess club", "a cooking club", "a coding club", "a drama club", "a photography club"] },
+    { s: "A family is going to spend a whole day at the beach.",
+      t: "Talk together about the different things they could take, and decide which is most important.",
+      o: ["sun cream", "an umbrella", "a ball", "sandwiches", "a book"] },
+    { s: "A family with two teenagers and a small child wants to do something together on Sunday.",
+      t: "Talk together about the different things they could do, and decide which everyone would enjoy.",
+      o: ["a picnic in the park", "going to the cinema", "a bike ride", "a visit to the zoo", "playing board games"] },
+    { s: "A town wants to build something new for young people.",
+      t: "Talk together about the different things it could build, and decide which would be most useful.",
+      o: ["a skate park", "a swimming pool", "a cinema", "a youth club", "a basketball court"] },
+    { s: "A girl has an important test next week and finds it hard to study at home.",
+      t: "Talk together about the different things she could do, and decide which would help her most.",
+      o: ["going to the library", "studying with a friend", "making a timetable", "turning off her phone", "getting up earlier"] },
+    { s: "A family can't decide where to go on holiday this summer.",
+      t: "Talk together about the different holidays they could have, and decide which would be best.",
+      o: ["a beach hotel", "a camping trip", "a big city", "a house in the mountains", "a road trip"] },
+    { s: "A school wants to organise a special day for all its students.",
+      t: "Talk together about the different days it could organise, and decide which would be most fun.",
+      o: ["a sports day", "a talent show", "a film day", "a food festival", "a day in the countryside"] },
+    { s: "A class wants to do something to help the environment.",
+      t: "Talk together about the different things they could do, and decide which would help most.",
+      o: ["cleaning the beach", "planting trees", "recycling at school", "cycling to school", "using less plastic"] },
+    { s: "Two friends are going on a five-hour coach journey.",
+      t: "Talk together about the different things they could take, and decide which would be most useful.",
+      o: ["a book", "headphones", "snacks", "a pack of cards", "a tablet with films"] }
+  ];
+
+  const $ = id => document.getElementById(id);
+  const situationEl = $("situation"), taskEl = $("task"), thingsEl = $("things");
+  const timerEl = $("timer"), timeEl = $("time"), fillEl = $("fill"), afterEl = $("after");
+  const startBtn = $("start"), soundBtn = $("sound");
+  let order = [], pos = 0;
+
+  function shuffle(a) {
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  /* ---- Timer ---- */
+  let length = 120;     // seconds chosen
+  let left = 120;       // seconds left
+  let endAt = 0, ticking = null;
+  let sound = true, audio = null;
+
+  function paint() {
+    const s = Math.ceil(left);
+    timeEl.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+    fillEl.style.width = `${(left / length) * 100}%`;
+    timerEl.classList.toggle("late", left > 0 && left <= 10);
+    timerEl.classList.toggle("done", left <= 0);
+    startBtn.textContent = ticking ? "Pause" : left <= 0 ? "Start again" : left < length ? "Carry on" : "Start";
+    afterEl.textContent = left <= 0 ? "Time's up. Which did you choose, and why?" : "";
+  }
+
+  function stop() { clearInterval(ticking); ticking = null; }
+
+  function chime() {
+    if (!sound || !audio) return;
+    [660, 880].forEach((freq, i) => {
+      const osc = audio.createOscillator(), gain = audio.createGain();
+      const t = audio.currentTime + i * 0.28;
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.25, t + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.7);
+      osc.connect(gain).connect(audio.destination);
+      osc.start(t); osc.stop(t + 0.75);
+    });
+  }
+
+  function step() {
+    left = Math.max(0, (endAt - Date.now()) / 1000);
+    if (left <= 0) { stop(); chime(); }
+    paint();
+  }
+
+  function startPause() {
+    if (ticking) { stop(); paint(); return; }
+    if (left <= 0) left = length;
+    // Browsers only allow sound after a click, so the sound is set up here.
+    try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); audio.resume(); } catch (e) { audio = null; }
+    endAt = Date.now() + left * 1000;
+    ticking = setInterval(step, 200);
+    paint();
+  }
+
+  function resetTimer() { stop(); left = length; paint(); }
+
+  startBtn.addEventListener("click", startPause);
+  $("reset").addEventListener("click", resetTimer);
+  document.querySelectorAll("[data-min]").forEach(b => b.addEventListener("click", () => {
+    length = Number(b.dataset.min) * 60;
+    document.querySelectorAll("[data-min]").forEach(x => x.classList.toggle("on", x === b));
+    resetTimer();
+  }));
+  soundBtn.addEventListener("click", () => {
+    sound = !sound;
+    soundBtn.textContent = sound ? "Sound on" : "Sound off";
+    soundBtn.setAttribute("aria-pressed", sound);
+  });
+
+  /* ---- Situations ---- */
+  function nextSituation() {
+    if (pos >= order.length) { order = shuffle([...situations.keys()]); pos = 0; }
+    const x = situations[order[pos++]];
+    situationEl.textContent = x.s;
+    taskEl.textContent = x.t;
+    thingsEl.classList.remove("fresh");
+    thingsEl.replaceChildren(...shuffle([...x.o]).map(text => {
+      const li = document.createElement("li");
+      li.textContent = text;
+      return li;
+    }));
+    void thingsEl.offsetWidth;
+    thingsEl.classList.add("fresh");
+    resetTimer();
+  }
+
+  $("next").addEventListener("click", nextSituation);
+  document.addEventListener("keydown", e => {
+    if (e.key === "ArrowRight" || e.key.toLowerCase() === "n") nextSituation();
+  });
+
+  nextSituation();
+</script>
+</body>
+</html>
