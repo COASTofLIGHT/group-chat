@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Weigh It Up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --mist: #EDF3F2;
+    --ink: #10303A;
+    --ink-soft: #456670;
+    --focus: #0B62A4;
+    --panel: #F9FBFB;
+    --line: rgba(16, 48, 58, 0.14);
+    --talk: #C7DE9F;   /* B2: green */
+    --late: #F4B5A0;   /* last ten seconds */
+    --font: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--mist);
+    color: var(--ink);
+    font-family: var(--font);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .page {
+    height: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: clamp(0.75rem, 2vw, 1.5rem) clamp(1rem, 3vw, 2.25rem);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(0.5rem, 1.5vh, 1rem);
+  }
+
+  .top { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+  .top h1 { margin: 0; font-size: clamp(1.5rem, 2.8vw, 2.2rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.05; }
+  .back { color: var(--ink-soft); font-size: 0.95rem; text-decoration: none; white-space: nowrap; }
+  .back:hover { text-decoration: underline; }
+  .back:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+  main {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: clamp(0.6rem, 1.6vw, 1.1rem);
+  }
+
+  section {
+    border-radius: 0.9rem;
+    padding: clamp(1rem, 2.2vw, 1.75rem);
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  /* Left: the task */
+  .talk {
+    background: var(--talk);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(0.6rem, 2vh, 1.2rem);
+  }
+
+  /* The three stages along the top */
+  .stages { list-style: none; margin: 0; padding: 0; display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .stages li {
+    padding: 0.25em 0.8em;
+    border-radius: 999px;
+    border: 2px solid rgba(16, 48, 58, 0.25);
+    font-size: clamp(0.85rem, 1.1vw, 1rem);
+    font-weight: 700;
+    color: var(--ink-soft);
+  }
+  .stages li.on { background: var(--ink); border-color: var(--ink); color: var(--mist); }
+
+  /* Mind map: question in the middle, five prompts around it */
+  .map {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: auto auto auto;
+    align-content: center;
+    gap: clamp(0.5rem, 1.6vh, 0.9rem) clamp(0.5rem, 1vw, 0.8rem);
+  }
+  .prompt {
+    background: var(--panel);
+    border-radius: 0.7rem;
+    padding: 0.5em 0.7em;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    font-size: clamp(1rem, min(1.9vw, 3.2vh), 1.6rem);
+    font-weight: 700;
+    line-height: 1.15;
+  }
+  .p1 { grid-column: 1 / 3; grid-row: 1; }
+  .p2 { grid-column: 3 / 5; grid-row: 1; }
+  .p3 { grid-column: 5 / 7; grid-row: 1; }
+  .centre { grid-column: 1 / 7; grid-row: 2; }
+  .p4 { grid-column: 2 / 4; grid-row: 3; }
+  .p5 { grid-column: 4 / 6; grid-row: 3; }
+  .centre {
+    background: var(--ink);
+    color: var(--mist);
+    border-radius: 0.9rem;
+    padding: clamp(0.8rem, 2.2vh, 1.4rem) clamp(1rem, 2vw, 1.6rem);
+    text-align: center;
+    font-size: clamp(1.3rem, min(2.8vw, 4.6vh), 2.4rem);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+  .map.fresh .prompt, .map.fresh .centre { animation: drop 0.3s ease-out both; }
+  @keyframes drop { from { opacity: 0; transform: translateY(-5px); } }
+
+  /* Stage 2: the decision question */
+  .decide {
+    margin: 0;
+    padding: 0.6em 0.9em;
+    border-radius: 0.8rem;
+    border: 3px solid var(--ink);
+    text-align: center;
+    font-size: clamp(1.2rem, min(2.4vw, 4vh), 2rem);
+    font-weight: 800;
+    line-height: 1.15;
+    animation: drop 0.3s ease-out both;
+  }
+
+  /* Stage 3: wider questions */
+  .over {
+    flex: 1;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: safe center;
+    gap: clamp(0.6rem, 2vh, 1rem);
+    counter-reset: q;
+  }
+  .over li {
+    counter-increment: q;
+    display: flex;
+    gap: 0.7rem;
+    align-items: baseline;
+    background: var(--panel);
+    border-radius: 0.7rem;
+    padding: 0.7em 0.9em;
+    font-size: clamp(1.15rem, min(2.2vw, 3.6vh), 1.9rem);
+    font-weight: 700;
+    line-height: 1.2;
+    animation: drop 0.3s ease-out both;
+  }
+  .over li::before { content: counter(q); color: var(--ink-soft); font-weight: 800; }
+
+  /* Timer and controls share one row. */
+  .timer { display: flex; align-items: center; gap: clamp(0.6rem, 1.4vw, 1.1rem); flex-wrap: wrap; }
+  .time {
+    font-size: clamp(1.8rem, min(3.6vw, 6vh), 3.2rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    min-width: 3.3ch;
+  }
+  .track { flex: 1; min-width: 5rem; height: 0.7rem; border-radius: 999px; background: rgba(16, 48, 58, 0.15); overflow: hidden; }
+  .fill { height: 100%; width: 100%; border-radius: 999px; background: var(--ink); transition: width 0.25s linear, background-color 0.3s ease; }
+  .timer.late .fill { background: var(--late); }
+  .after { display: none; flex: 1; margin: 0; font-size: clamp(1rem, 1.5vw, 1.25rem); font-weight: 700; line-height: 1.25; }
+  .timer.done .track { display: none; }
+  .timer.done .after { display: block; }
+  .spacer { flex: 1; }
+
+  button {
+    font: inherit;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 0.55em 1.1em;
+    border-radius: 0.6rem;
+    border: 2px solid var(--ink);
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  button.main { background: var(--ink); color: var(--mist); }
+  #start { min-width: 6.5em; }
+  button:hover { filter: brightness(1.15); }
+  button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+  /* Right: useful language, which changes with the stage */
+  .lang {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(0.8rem, 2.4vh, 1.4rem);
+  }
+  .lang h3 { margin: 0 0 0.35em; font-size: clamp(0.95rem, 1.2vw, 1.1rem); font-weight: 800; color: var(--ink-soft); }
+  .lang ul { list-style: none; margin: 0; padding: 0; }
+  .lang li { font-size: clamp(1rem, 1.5vw, 1.3rem); line-height: 1.3; margin-bottom: 0.25em; }
+  .lang b { font-weight: 800; }
+  .lang .gap { color: var(--ink-soft); }
+  .lang > div { display: flex; flex-direction: column; gap: clamp(0.8rem, 2.4vh, 1.4rem); }
+
+  @media (max-width: 800px) {
+    html, body { height: auto; }
+    .page { height: auto; }
+    main { grid-template-columns: 1fr; }
+    .map { grid-template-columns: 1fr 1fr; }
+    .centre { grid-column: 1 / -1; grid-row: 1; }
+    .p1, .p2, .p3, .p4, .p5 { grid-column: auto; grid-row: auto; }
+    .p5 { grid-column: 1 / -1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .map.fresh .prompt, .map.fresh .centre, .decide, .over li { animation: none; }
+    .fill { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="top">
+    <h1>Weigh It Up</h1>
+    <a class="back" href="https://coastoflight.github.io/group-chat/">&larr; Group Chat</a>
+  </div>
+
+  <main>
+    <section class="talk">
+      <ol class="stages" aria-label="Stages">
+        <li id="st1" class="on">1 Talk</li>
+        <li id="st2">2 Decide</li>
+        <li id="st3">3 Over to you</li>
+      </ol>
+
+      <div class="map" id="map">
+        <div class="prompt p1"></div>
+        <div class="prompt p2"></div>
+        <div class="prompt p3"></div>
+        <div class="centre" id="question"></div>
+        <div class="prompt p4"></div>
+        <div class="prompt p5"></div>
+      </div>
+
+      <p class="decide" id="decide" hidden></p>
+
+      <ol class="over" id="over" hidden></ol>
+
+      <div class="timer" id="timer">
+        <div class="time" id="time" role="timer" aria-live="off">2:00</div>
+        <div class="track" aria-hidden="true"><div class="fill" id="fill"></div></div>
+        <p class="after" id="after" aria-live="polite"></p>
+        <button id="start" class="main">Start</button>
+        <span class="spacer" id="spacer" hidden></span>
+        <button id="step">Now decide</button>
+        <button id="next">New topic</button>
+      </div>
+    </section>
+
+    <section class="lang" aria-label="Useful language">
+      <!-- Stage 1: discuss the prompts -->
+      <div data-for="1">
+        <div>
+          <h3>Think aloud</h3>
+          <ul>
+            <li><b>One reason might be that</b> <span class="gap">…</span></li>
+            <li><b>I suppose</b> <span class="gap">…</span></li>
+            <li><b>That depends on</b> <span class="gap">…</span></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Bring your partner in</h3>
+          <ul>
+            <li><b>What's your view on</b> <span class="gap">…</span>?</li>
+            <li><b>Would you agree that</b> <span class="gap">…</span>?</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Move on</h3>
+          <ul>
+            <li><b>Shall we move on to</b> <span class="gap">…</span>?</li>
+            <li><b>What about this one?</b></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Stage 2: reach a decision -->
+      <div data-for="2" hidden>
+        <div>
+          <h3>Suggest</h3>
+          <ul>
+            <li><b>Shall we go for</b> <span class="gap">…</span>?</li>
+            <li><b>For me, it has to be</b> <span class="gap">…</span></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Negotiate</h3>
+          <ul>
+            <li><b>I see your point, but</b> <span class="gap">…</span></li>
+            <li><b>I could live with that.</b></li>
+            <li><b>Let's agree to disagree.</b></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Sum up</h3>
+          <ul>
+            <li><b>So we've decided on</b> <span class="gap">…</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Stage 3: wider discussion -->
+      <div data-for="3" hidden>
+        <div>
+          <h3>Give a full answer</h3>
+          <ul>
+            <li><b>On the whole,</b> <span class="gap">…</span></li>
+            <li><b>Generally speaking,</b> <span class="gap">…</span></li>
+            <li><b>For example,</b> <span class="gap">…</span></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Add to what your partner says</h3>
+          <ul>
+            <li><b>I'd go along with that up to a point.</b></li>
+            <li><b>That's true, and also</b> <span class="gap">…</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+</div>
+
+<script>
+  /*
+    Topics. Each one has:
+      q: the question in the middle
+      p: five prompts around it
+      d: the decision question (shown at stage 2)
+      f: wider questions (shown at stage 3)
+    To add one, copy a block and change it.
+  */
+  const topics = [
+    { q: "Why do people choose to live in big cities?",
+      p: ["jobs", "entertainment", "public transport", "meeting people", "education"],
+      d: "Which reason do you think is the most important?",
+      f: ["Would you rather live in a city or the countryside? Why?", "Is it better to grow up in a city or a small town?", "How might cities change in the future?"] },
+    { q: "What are the benefits of learning another language?",
+      p: ["travel", "jobs", "making friends", "understanding other cultures", "keeping your brain active"],
+      d: "Which benefit will matter most in the future?",
+      f: ["Should everyone learn a second language at school?", "Will translation apps make learning languages unnecessary?", "What's the best age to start learning a language?"] },
+    { q: "How could young people be encouraged to do more exercise?",
+      p: ["free sports centres", "more PE at school", "fitness apps", "local sports clubs", "famous athletes"],
+      d: "Which would work best for teenagers?",
+      f: ["Why do some people stop doing sport as they get older?", "Should PE be graded like other subjects?", "Is watching sport as good as doing it?"] },
+    { q: "What can families do to reduce waste at home?",
+      p: ["recycling", "buying less", "repairing things", "avoiding plastic", "using up leftover food"],
+      d: "Which would be the hardest for most families?",
+      f: ["Whose job is it to protect the environment: governments or individuals?", "Do young people care more about the planet than older people?", "Should shops be made to use less packaging?"] },
+    { q: "How has technology changed the way people spend their free time?",
+      p: ["streaming", "video games", "social media", "music", "keeping in touch"],
+      d: "Which change has been the most positive?",
+      f: ["Do people spend too much time on screens?", "What did people do for fun before the internet?", "Should there be phone-free days?"] },
+    { q: "What makes a good teacher?",
+      p: ["patience", "knowing the subject", "a sense of humour", "being fair", "making lessons fun"],
+      d: "Which quality is the most important?",
+      f: ["Could a computer ever be as good as a teacher?", "Is it harder to be a teacher now than in the past?", "What makes a good student?"] },
+    { q: "Why do some people prefer to travel alone?",
+      p: ["freedom", "meeting new people", "building confidence", "saving money", "time to think"],
+      d: "Which is the most convincing reason?",
+      f: ["Would you like to travel alone one day? Why? Why not?", "Is travelling with friends better than with family?", "What can people learn from travelling?"] },
+    { q: "What are the advantages of having a part-time job while studying?",
+      p: ["earning money", "work experience", "independence", "managing time", "meeting new people"],
+      d: "Which advantage would be most useful later in life?",
+      f: ["Can a part-time job get in the way of studying?", "At what age should young people start working?", "What kind of part-time job would suit you?"] },
+    { q: "How do friends influence the choices we make?",
+      p: ["clothes", "music", "hobbies", "studying", "free time"],
+      d: "Where do friends have the strongest influence?",
+      f: ["Is it possible to be too influenced by friends?", "Do friends or family have more influence on teenagers?", "How do influencers online compare with real friends?"] },
+    { q: "What could a town do to attract more visitors?",
+      p: ["festivals", "better transport", "cheaper hotels", "museums", "nature and beaches"],
+      d: "Which would cost the least but help the most?",
+      f: ["Can too many tourists be a problem for a town?", "What would you show a visitor to your town?", "Is local tourism better than going abroad?"] },
+    { q: "Why is it important for families to spend time together?",
+      p: ["support", "traditions", "learning from older people", "having fun", "feeling safe"],
+      d: "Which do teenagers value the most?",
+      f: ["Do families spend less time together than in the past?", "What's the best way for a family to spend a weekend?", "Should families eat together every day?"] },
+    { q: "What can help people stay calm before an exam?",
+      p: ["sleep", "a revision plan", "exercise", "talking to friends", "music"],
+      d: "Which would you recommend to a friend?",
+      f: ["Are exams the best way to test what students know?", "Is some stress useful?", "How could schools make exams less stressful?"] },
+    { q: "Why do people keep pets?",
+      p: ["company", "learning responsibility", "getting exercise", "fun", "feeling calmer"],
+      d: "Which reason is the most important for children?",
+      f: ["Should pets be allowed in more places, like offices or restaurants?", "Is it fair to keep animals in flats?", "What's the most unusual pet you've heard of?"] },
+    { q: "How might schools be different in twenty years?",
+      p: ["online lessons", "AI teachers", "shorter school days", "no exams", "more outdoor learning"],
+      d: "Which change is the most likely to happen?",
+      f: ["Which of these changes would you like to see?", "What will students still need to learn in twenty years?", "Is it important to go to school in person?"] }
+  ];
+
+  const $ = id => document.getElementById(id);
+  const mapEl = $("map"), questionEl = $("question"), decideEl = $("decide"), overEl = $("over");
+  const timerEl = $("timer"), timeEl = $("time"), fillEl = $("fill"), afterEl = $("after");
+  const startBtn = $("start"), stepBtn = $("step"), trackEl = timerEl.querySelector(".track");
+  const prompts = [...mapEl.querySelectorAll(".prompt")];
+  const STAGE_TIME = { 1: 120, 2: 60 };
+  const AFTER = { 1: "Time's up. Now decide together.", 2: "Time's up. What did you decide?" };
+  let order = [], pos = 0, topic = null, stage = 1;
+
+  function shuffle(a) {
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  /* ---- Timer ---- */
+  let length = 120, left = 120, endAt = 0, ticking = null, audio = null;
+
+  function paint() {
+    const s = Math.ceil(left);
+    timeEl.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+    fillEl.style.width = `${(left / length) * 100}%`;
+    timerEl.classList.toggle("late", left > 0 && left <= 10);
+    timerEl.classList.toggle("done", left <= 0);
+    startBtn.textContent = ticking ? "Pause" : left <= 0 ? "Again" : left < length ? "Carry on" : "Start";
+    afterEl.textContent = left <= 0 ? AFTER[stage] || "" : "";
+  }
+  function stop() { clearInterval(ticking); ticking = null; }
+  function chime() {
+    if (!audio) return;
+    [660, 880].forEach((freq, i) => {
+      const osc = audio.createOscillator(), gain = audio.createGain();
+      const t = audio.currentTime + i * 0.28;
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.25, t + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.7);
+      osc.connect(gain).connect(audio.destination);
+      osc.start(t); osc.stop(t + 0.75);
+    });
+  }
+  function tick() {
+    left = Math.max(0, (endAt - Date.now()) / 1000);
+    if (left <= 0) { stop(); chime(); }
+    paint();
+  }
+  function startPause() {
+    if (ticking) { stop(); paint(); return; }
+    if (left <= 0) left = length;
+    // Browsers only allow sound after a click, so the sound is set up here.
+    try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); audio.resume(); } catch (e) { audio = null; }
+    endAt = Date.now() + left * 1000;
+    ticking = setInterval(tick, 200);
+    paint();
+  }
+  function setTimer(seconds) { stop(); length = left = seconds; paint(); }
+  startBtn.addEventListener("click", startPause);
+
+  /* ---- Stages ---- */
+  function setStage(n) {
+    stage = n;
+    [1, 2, 3].forEach(i => $("st" + i).classList.toggle("on", i === n));
+    document.querySelectorAll(".lang [data-for]").forEach(d => d.hidden = Number(d.dataset.for) !== n);
+
+    mapEl.hidden = n === 3;
+    decideEl.hidden = n !== 2;
+    overEl.hidden = n !== 3;
+    if (n === 2) decideEl.textContent = topic.d;
+    if (n === 3) overEl.replaceChildren(...topic.f.map(t => { const li = document.createElement("li"); li.textContent = t; return li; }));
+
+    // No timer in stage 3: the teacher leads the wider discussion.
+    const timed = n !== 3;
+    [timeEl, trackEl, afterEl, startBtn].forEach(el => el.hidden = !timed);
+    $("spacer").hidden = timed;
+    if (timed) setTimer(STAGE_TIME[n]); else stop();
+
+    stepBtn.hidden = n === 3;
+    stepBtn.textContent = n === 1 ? "Now decide" : "Over to you";
+  }
+  stepBtn.addEventListener("click", () => setStage(stage + 1));
+
+  /* ---- Topics ---- */
+  function nextTopic() {
+    if (pos >= order.length) { order = shuffle([...topics.keys()]); pos = 0; }
+    topic = topics[order[pos++]];
+    questionEl.textContent = topic.q;
+    prompts.forEach((el, i) => el.textContent = topic.p[i]);
+    mapEl.classList.remove("fresh");
+    void mapEl.offsetWidth;
+    mapEl.classList.add("fresh");
+    setStage(1);
+  }
+  $("next").addEventListener("click", nextTopic);
+
+  nextTopic();
+</script>
+</body>
+</html>
