@@ -145,6 +145,7 @@
       <div class="controls">
         <button id="prev">Back</button>
         <button class="main" id="reveal">Reveal all</button>
+        <button id="shuffle" title="Mix the sentences into new rounds and start again">Shuffle</button>
         <span class="count" id="count"></span>
         <button class="main push" id="next">Next round</button>
       </div>
@@ -181,16 +182,21 @@
 
 <script>
   // ============================================================
-  // ROUNDS
-  // Each round has a name and FIVE sentences to talk about together.
-  // To add one, copy a round (from { name: ... to the closing ] },),
-  // paste it at the end of the list, then change the name and sentences.
+  // TOPICS
+  // Each topic is a deck of sentences. Every time the page loads
+  // (or you press Shuffle), each deck is mixed up and dealt into
+  // rounds of 5. Every round gets at least one fact, one opinion
+  // and one false, and no sentence repeats until the deck is used up.
+  //
+  // To add a sentence, copy one line { s: ... }, paste it into a
+  // topic and change it. You don't need to count to 5.
+  // To add a topic, copy a whole topic block and change the name.
   //   a    = "fact", "false" or "opinion"
   //   note = what appears after the reveal
-  // A mix of answers in each round makes for a better chat.
+  // Superstitions count as opinions.
   // ============================================================
-  const rounds = [
-    { name: "Australia 1", items: [
+  const topics = [
+    { name: "Australia", items: [
       { s: "The official language is French.", a: "false",
         note: "Most people speak English. (By law, Australia doesn't have an official language.)" },
       { s: "It is the best country in the world!", a: "opinion",
@@ -200,23 +206,7 @@
       { s: "Christmas is in the summer in Australia.", a: "fact",
         note: "December is summer there, so lots of people go to the beach on Christmas Day." },
       { s: "The capital is Sydney.", a: "false",
-        note: "The capital is Canberra." }
-    ] },
-
-    { name: "Cats 1", items: [
-      { s: "Cats sleep for 12 to 16 hours a day.", a: "fact",
-        note: "That's more than half the day!" },
-      { s: "Cats are better than dogs.", a: "opinion",
-        note: "Cat people say yes. Dog people say no." },
-      { s: "All cats hate water.", a: "false",
-        note: "Most cats don't like getting wet, but some cats love to swim." },
-      { s: "Cats have nine lives.", a: "false",
-        note: "It's an old saying. In Spain, people say cats have seven lives!" },
-      { s: "Cats can't taste sweet things.", a: "fact",
-        note: "Cats can't taste sugar, so they aren't interested in cake." }
-    ] },
-
-    { name: "Australia 2", items: [
+        note: "The capital is Canberra." },
       { s: "The people are so friendly.", a: "opinion",
         note: "Maybe! But not everyone agrees." },
       { s: "The doctors have wings and can fly.", a: "false",
@@ -229,7 +219,17 @@
         note: "There are no wild tigers, but there are lots of kangaroos and koalas." }
     ] },
 
-    { name: "Cats 2", items: [
+    { name: "Cats", items: [
+      { s: "Cats sleep for 12 to 16 hours a day.", a: "fact",
+        note: "That's more than half the day!" },
+      { s: "Cats are better than dogs.", a: "opinion",
+        note: "Cat people say yes. Dog people say no." },
+      { s: "All cats hate water.", a: "false",
+        note: "Most cats don't like getting wet, but some cats love to swim." },
+      { s: "Cats have nine lives.", a: "false",
+        note: "It's an old saying. In Spain, people say cats have seven lives!" },
+      { s: "Cats can't taste sweet things.", a: "fact",
+        note: "Cats can't taste sugar, so they aren't interested in cake." },
       { s: "A group of cats is called a clowder.", a: "fact",
         note: "It's a strange word, but it's true!" },
       { s: "Cats always land on their feet.", a: "false",
@@ -240,14 +240,105 @@
         note: "Some owners say yes. Others say cats are hard work!" },
       { s: "Cats only purr when they're happy.", a: "false",
         note: "Cats also purr when they're scared or hurt." }
+    ] },
+
+    { name: "Zebras", items: [
+      { s: "A zebra has black and white stripes.", a: "fact",
+        note: "Yes! Scientists still argue about why they have them." },
+      { s: "Every zebra has stripes.", a: "false",
+        note: "Very rarely, a zebra is born with spots or almost no stripes." },
+      { s: "A zebra's coat is like a bar code. You can scan it.", a: "false",
+        note: "Not in a shop! But every zebra's stripes are different, and scientists use computers to recognise them." },
+      { s: "My dad says zebras are painted horses.", a: "fact",
+        note: "It's a fact that he says it. Are zebras painted horses? No!" },
+      { s: "Zebras are prettier than donkeys.", a: "opinion",
+        note: "Some people think so. Donkey fans don't agree!" },
+      { s: "Most zebras have black and white stripes.", a: "fact",
+        note: "Yes, most of them do." },
+      { s: "All things with black and white stripes are zebras.", a: "false",
+        note: "Lots of things have black and white stripes: a zebra crossing, a football shirt, a bee… no, wait!" },
+      { s: "You shouldn't ride a zebra.", a: "opinion",
+        note: "Most people agree, but 'should' sentences are usually opinions. (Zebras are wild and they kick!)" },
+      { s: "In the wild, zebras live for 50 years.", a: "false",
+        note: "In the wild, zebras live for about 20 to 25 years." },
+      { s: "If something doesn't have black and white stripes, it isn't a zebra.", a: "false",
+        note: "Baby zebras have brown and white stripes!" },
+      { s: "There are no zebras that don't have stripes.", a: "false",
+        note: "A very few zebras are born with spots or almost no stripes." },
+      { s: "A horse-like animal with black and white stripes is usually a zebra.", a: "fact",
+        note: "Usually! But a zorse (half zebra, half horse) has stripes too." },
+      { s: "Almost all zebras have black and white stripes.", a: "fact",
+        note: "Yes. Only a very few zebras look different." },
+      { s: "Zebras would make great pets.", a: "opinion",
+        note: "Some people might like one, but zebras are wild and very hard to train." },
+      { s: "A zoo is a good home for a zebra.", a: "opinion",
+        note: "Some people say yes. Others say zebras should be free." }
+    ] },
+
+    { name: "Koalas", items: [
+      { s: "The koala is one of the cutest animals.", a: "opinion",
+        note: "Lots of people think so. What do you think?" },
+      { s: "Koalas are bears.", a: "false",
+        note: "They look like bears, but they're marsupials. Babies grow in their mum's pouch, like kangaroos." },
+      { s: "Koalas eat leaves. These leaves are poisonous to other animals.", a: "fact",
+        note: "They eat eucalyptus leaves. Most animals get sick if they eat them." },
+      { s: "Everybody likes seeing koalas.", a: "false",
+        note: "'Everybody' is too big a word! Some people aren't interested in koalas." },
+      { s: "Koalas can be found in Australia and Northern India.", a: "false",
+        note: "Wild koalas only live in Australia." },
+      { s: "When people see a koala, the first thing they think of is a teddy bear.", a: "opinion",
+        note: "Maybe some people do, but we can't know what everyone thinks." },
+      { s: "If you see a koala on a Sunday, it brings good luck.", a: "opinion",
+        note: "It's a superstition. Some people might believe it. Others don't." },
+      { s: "Most koalas die when they are put in zoos.", a: "false",
+        note: "Good zoos look after koalas well, and many live a long life there." },
+      { s: "Koalas usually live for about 10 years.", a: "fact",
+        note: "In the wild, it's about 10 to 12 years." },
+      { s: "Koalas sleep for up to 20 hours a day.", a: "fact",
+        note: "Even more than cats! Their leaves don't give them much energy." }
     ] }
   ];
 
   const LABEL = { fact: "Fact", false: "False", opinion: "Opinion" };
-  const steps = [...rounds, { name: "Your turn", yourTurn: true }];
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  // Deal one topic into rounds of (about) 5, each with a mix of answers.
+  function deal(topic) {
+    const n = topic.items.length, r = Math.max(1, Math.ceil(n / 5));
+    const sizes = Array.from({ length: r }, (_, i) => Math.floor(n / r) + (i < n % r ? 1 : 0));
+    const rounds = sizes.map(() => []);
+    const byType = { fact: [], opinion: [], false: [] };
+    shuffle([...topic.items]).forEach(it => byType[it.a].push(it));
+    for (const t of ["fact", "opinion", "false"]) {
+      rounds.forEach((rd, i) => { if (byType[t].length && rd.length < sizes[i]) rd.push(byType[t].pop()); });
+    }
+    const rest = shuffle([...byType.fact, ...byType.opinion, ...byType.false]);
+    rounds.forEach((rd, i) => { while (rd.length < sizes[i] && rest.length) rd.push(rest.pop()); shuffle(rd); });
+    return rounds;
+  }
+
+  // Order: Australia 1, Cats 1, Zebras 1, Koalas 1, Australia 2 … then Your turn.
+  function buildSteps() {
+    const dealt = topics.map(deal);
+    const most = Math.max(...dealt.map(d => d.length));
+    const out = [];
+    for (let k = 0; k < most; k++) {
+      topics.forEach((t, i) => { if (dealt[i][k]) out.push({ name: `${t.name} ${k + 1}`, items: dealt[i][k] }); });
+    }
+    out.push({ name: "Your turn", yourTurn: true });
+    return out;
+  }
 
   const $ = id => document.getElementById(id);
   const listEl = $("list"), yoursEl = $("yours"), revealBtn = $("reveal");
+  let steps = buildSteps();
   let pos = 0;
 
   function show() {
@@ -290,9 +381,17 @@
     syncReveal();
   });
 
-  function move(d) { pos = (pos + d + steps.length) % steps.length; show(); }
+  function reshuffle() { steps = buildSteps(); pos = 0; show(); }
+
+  function move(d) {
+    // Going past "Your turn" starts a fresh shuffle.
+    if (d > 0 && pos === steps.length - 1) return reshuffle();
+    pos = (pos + d + steps.length) % steps.length;
+    show();
+  }
   $("next").addEventListener("click", () => move(1));
   $("prev").addEventListener("click", () => move(-1));
+  $("shuffle").addEventListener("click", reshuffle);
   document.addEventListener("keydown", e => {
     if (e.key === "ArrowRight") move(1);
     if (e.key === "ArrowLeft") move(-1);
